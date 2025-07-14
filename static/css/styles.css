@@ -1,4 +1,4 @@
-:root {  
+:root {
     --height-header: 20vh;
     --height-footer: 50vh;
     --height-aside: 90vh;
@@ -67,11 +67,11 @@ section {
 }
 
 /* #listaCursos div  , */
-.ciclo ,
+.ciclo,
 .ciclo p,
-.curso ,
-.curso p ,
-.grupos ,
+.curso,
+.curso p,
+.grupos,
 .grupo {
     border: 1px solid white;
     padding-inline: 20px;
@@ -87,7 +87,7 @@ section {
     color: var(--color2);
 }
 
-.nom_ciclo ,
+.nom_ciclo,
 .nom_curso {
     background-color: white;
     font-weight: bold;
@@ -97,7 +97,7 @@ section {
     gap: 30px;
 }
 
-.curso ,
+.curso,
 .ciclo,
 .grupos {
     border: 0;
@@ -116,20 +116,6 @@ section {
     display: flex;
     align-items: center;
 }
-
-/* .grupo {
-    color: white;
-    border: 1px solid white;
-    display: grid;
-    width: 100%;
-    border-radius: 10px;
-    padding-inline: 10px;
-    padding-block: 5px;
-    justify-items: center;
-    align-items: center;
-    text-align: center;
-} */
-
 
 
 
@@ -180,12 +166,46 @@ section {
     background-color: blue;
 }
 
-.pasado {
-    background-color: black ;
+.cell_pasado {
+    background-color: black;
+    /* background: color-mix(in srgb, black 50%, transparent 20%); */
+}
+
+.cell_actual {
+    padding: 0;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.cell_actual .actual {
+    height: 100%;
+    width: 100%;
+    border: 0;
+    position: absolute;
+    inset: 0;
+    /* top: 20px; */
+    /* bottom: 0; */
+    z-index: 90;
 }
 
 .cell.error {
     background-color: red
 }
 
-
+#reload {
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+    z-index: 99999;
+    display: flex;
+    height: 60px;
+    width: 60px;
+    justify-content: center;
+    align-items: center;
+    font-size: 175%;
+    border-radius: 100%;
+    border: 0;
+    background-color: #00c954;
+    color: white;
+}

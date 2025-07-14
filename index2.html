@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/css/common_styles/bootstrap.min.css" />
+    <link rel="stylesheet" href="static/css/common_styles/all.min.css" />
+    <link rel="stylesheet" href="static/css/common_styles/fontawesome.min.css" />
+    <link rel="stylesheet" href="static/css/common_styles/fonts.css" />
+    <link rel="stylesheet" href="static/css/common_styles/common_style.css" />
+    <link rel="stylesheet" href="static/css/styles.css">
+    <title>
+        Horario 2025-I
+    </title>
+</head>
+
+<body class="general_body">
+    <button id="reload">
+        <i class="fa-solid fa-rotate-right"></i>
+    </button>
+
+    <aside id="listaCursos" class="general_element">
+    </aside>
+
+    <section class="general_element">
+        <div id="grid">
+        </div>
+    </section>
+
+    <script src="static/js/common_scripts/bootstrap.bundle.min.js"></script>
+    <script src="static/js/common_scripts/bootstrap.min.js"></script>
+    <script src="static/js/scriptHorario.js"></script>
+    <script>
+        document.querySelector('#reload').addEventListener('click', () => {
+            restartPage();
+            location.reload();
+        });
+
+        window.addEventListener("beforeunload", function () {
+            restartPage();
+        });
+
+        window.addEventListener("load", function () {
+            moveScreen();
+        });
+
+        function restartPage() {
+            sessionStorage.setItem("scrollPosition", window.scrollY);
+        }
+
+        function moveScreen() {
+            const scrollPosition = sessionStorage.getItem("scrollPosition");
+            if (scrollPosition !== null) {
+                window.scrollTo(parseInt(scrollPosition), parseInt(scrollPosition));
+                sessionStorage.removeItem("scrollPosition");
+            }
+        }
+
+        window.onload = function () {
+            moveScreen();
+        };
+    </script>
+</body>
+
+</html>
