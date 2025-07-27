@@ -3,8 +3,11 @@
     --height-footer: 50vh;
     --height-aside: 90vh;
     --height-section: 1vh;
-    --width-aside: 17.5vw;
-    --color-background: #272727;
+    --width-aside: 350px;
+
+    /* --color-background: #272727; */
+    --color-background: #081028;
+    /* --color-background: #1b1b1b; */
     --color1: #006b96;
     --color2: #141414;
     --color3: #c7309a;
@@ -15,6 +18,7 @@
 body {
     font-family: Poppins, sans-serif;
     font-size: 10px;
+    background-color: color-mix(in srgb, color percentage, color percentage);
 }
 
 .general_body {
@@ -35,15 +39,31 @@ body {
 
 section {
     /* background-color: var(--color3); */
-    min-height: var(--height-section);
+    /* min-height: var(--height-section); */
+    height: 100%;
     /* min-height: 60vh; */
     grid-area: body_section;
     padding: 20px;
+    padding-block: 10px;
 }
 
 
+::-webkit-scrollbar {
+    width: 3px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #ffffff6a;
+    border-radius: var(--border-radius-size);
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
 #listaCursos {
-    background-color: var(--color2);
+    background-color: #00000064;
     min-height: var(--height-aside);
     grid-area: body_aside;
     display: flex;
@@ -77,15 +97,24 @@ section {
     padding-inline: 20px;
     padding-block: 10px;
     text-align: center;
-    border-radius: 10px;
+    border-radius: 5px;
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
+.curso {
+    gap: 5px;
+    width: fit-content;
+}
+
 .nom_ciclo {
     color: var(--color2);
+    width: 100%;
+    /* height: fit-content; */
+    /* width: fit-content; */
 }
+
 
 .nom_ciclo,
 .nom_curso {
@@ -94,7 +123,11 @@ section {
 }
 
 .ciclo {
-    gap: 30px;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
 }
 
 .curso,
@@ -108,6 +141,7 @@ section {
     display: grid;
     grid-template-columns: 6fr 1fr;
     align-items: center;
+    padding-block: 5px;
     justify-items: center;
     /* flex-direction: row; */
 }
@@ -117,26 +151,29 @@ section {
     align-items: center;
 }
 
+.nom_curso {
+    padding-block: 5px !important;
+}
 
 
 
 #grid {
     display: grid;
-    gap: 10px;
+    gap: 1px;
     color: white;
 }
 
 .cell {
-    border: 1px solid #ccc;
+    border: 1px solid #cccccc47;
     transition: background-color 0.3s ease;
     display: flex;
     flex-direction: column;
     z-index: 1;
     align-items: center;
     justify-content: center;
-    padding: 5px;
-    border-radius: 10px;
-    gap: 10px;
+    /* padding: 5px; */
+    border-radius: 5px;
+    /* gap: 10px; */
 }
 
 .cell div {
@@ -145,30 +182,32 @@ section {
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    border-radius: 7px;
-    /* height: 30px; */
-    padding-block: 5px;
-    padding-inline: 10px;
-    border: 1px solid white;
+    border-radius: 5px;
+    height: 100%;
+    width: 100%;
+    /* border: 1px solid ; */
+}
+
+.cell:has(.block) {
+    /* border: 1px solid rgba(255, 255, 255, 0.649); */
+    border: 0px solid rgba(255, 255, 255, 0.649);
 }
 
 .cell_1 {
-    background-color: #7700ff;
-    /* width: 100px; */
-    /*  */
+    background-color: color-mix(in srgb, var(--color-background) 90%, rgb(18, 18, 18) 95%);
 }
 
 .cell_2 {
-    background-color: #006eff;
+    background-color: color-mix(in srgb, var(--color-background) 60%, rgb(255, 255, 255) 1%);
 }
 
-.cell_1.cell_2 {
-    background-color: blue;
+.cell_1, .cell_2 {
+    filter: saturate(3.5);
+    border: 1px solid #ffffff5a;
 }
 
 .cell_pasado {
     background-color: black;
-    /* background: color-mix(in srgb, black 50%, transparent 20%); */
 }
 
 .cell_actual {
@@ -190,8 +229,22 @@ section {
 }
 
 .cell.error {
-    background-color: red
+    /* background-color: red */
+  animation: parpadeo-rojo 1s infinite;
+
 }
+
+@keyframes parpadeo-rojo {
+  0%, 100% {
+    background-color: transparent;
+    border: 1px solid rgb(255, 0, 0);
+}
+50% {
+    border: 1px solid white;
+    background-color: rgba(255, 21, 21, 0.976);
+  }
+}
+
 
 #reload {
     position: fixed;

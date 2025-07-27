@@ -1,6 +1,6 @@
 
 const nombresDias = ["HORA", "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-const cols = 8, rows = 17, sizeCell = 50, sizeCol = 120, sizeRow = 50;
+const cols = 8, rows = 17, sizeCell = 50, sizeCol = 120, sizeRow = 35;
 const grid = [];
 const time = new Date();
 // const dayActual = time.getDay();
@@ -15,7 +15,7 @@ function createGrid() {
     // gridElement.style.gridTemplateColumns = `repeat(${cols}, ${sizeCol}px)`;
     // gridElement.style.gridTemplateRows = `repeat(${rows + 1}, ${sizeRow}px)`;
     gridElement.style.gridTemplateColumns = `repeat(${cols}, ${sizeCol}px)`;
-    gridElement.style.gridTemplateRows = `repeat(${rows + 1}, auto)`;
+    gridElement.style.gridTemplateRows = `repeat(${rows }, ${sizeRow}px)`;
 
     for (let i = 0; i < rows; i++) {
         grid[i] = [];
@@ -80,8 +80,16 @@ function createGrid() {
 
 function agregarGrupo(cell, act) {
     cell.innerHTML += `
-                <div class="block" style="background-color: ${act.color}">
-                <span>${act.letters} - ${act.group} | ${act.prof}</span>
+                <div class="block" 
+                style="
+                border: 1px solid color-mix(in srgb, ${act.color} 100%, white 70%);
+                background-color: color-mix(in srgb, ${act.color} 15%, transparent 50%);
+                ">
+                <span 
+                style="
+                color: color-mix(in srgb, ${act.color} 100%, white 90%);
+                "
+                >${act.letters} - ${act.group} | ${act.prof}</span>
                 </div>
                 `;
     let cant = cell.querySelectorAll('.block').length;
@@ -107,7 +115,7 @@ function listarCursos() {
     const ciclos = {};
     for (const act of activities) {
         if (!ciclos[act.ciclo]) ciclos[act.ciclo] = {};
-        if (!ciclos[act.ciclo][act.name]) ciclos[act.ciclo][act.name] = { color: act.color, grupos: {} };
+        if (!ciclos[act.ciclo][act.name]) ciclos[act.ciclo][act.name] = { color: act.color, grupos: {} , letras: act.letters };
         if (!ciclos[act.ciclo][act.name].grupos[act.group]) {
             ciclos[act.ciclo][act.name].grupos[act.group] = { prof: act.prof, actividades: [] };
         }
@@ -122,7 +130,7 @@ function listarCursos() {
         for (const curso in ciclos[ciclo]) {
             const cursoElement = document.createElement('div');
             cursoElement.classList.add('curso');
-            cursoElement.innerHTML = `<p class="nom_curso">${curso}</p>`;
+            cursoElement.innerHTML = `<p class="nom_curso">${ciclos[ciclo][curso].letras}</p>`;
             cursoElement.querySelector('.nom_curso').style.backgroundColor = ciclos[ciclo][curso].color;
 
             for (const grupo in ciclos[ciclo][curso].grupos) {
