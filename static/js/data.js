@@ -19,7 +19,7 @@ const activities =  [
     {"ciclo": 8, "color": "#ff6600", "day": 6, "group": "B", "hr_fin": 10, "hr_ini": 7, "letters": "MDBD", "name": "Miner\u00eda De Datos Y Big Data", "prof": "Chavarry Chankay", "prof_nom": "Mariana"}, 
     {"ciclo": 8, "color": "#ff6600", "day": 5, "group": "A", "hr_fin": 15, "hr_ini": 13, "letters": "MDBD", "name": "Miner\u00eda De Datos Y Big Data", "prof": "Chavarry Chankay", "prof_nom": "Mariana"}, 
     {"ciclo": 8, "color": "#ff6600", "day": 5, "group": "B", "hr_fin": 17, "hr_ini": 15, "letters": "MDBD", "name": "Miner\u00eda De Datos Y Big Data", "prof": "Chavarry Chankay", "prof_nom": "Mariana"}, 
-    {"ciclo": 8, "color": "#ff6600", "day": 1, "group": "A", "hr_fin": 22, "hr_ini": 19, "letters": "MDBD", "name": "Miner\u00eda De Datos Y Big Data", "prof": "Chavarry Chankay", "prof_nom": "Mariana"}
+    {"ciclo": 8, "color": "#ff6600", "day": 1, "group": "A", "hr_fin": 22, "hr_ini": 19, "letters": "MDBD", "name": "Miner\u00eda De Datos Y Big Data", "prof": "Chavarry Chankay", "prof_nom": "Mariana"} ,
     {"ciclo": 8, "color": "#006AF5", "day": 3, "group": "A", "hr_fin": 19, "hr_ini": 17, "letters": "GGTI", "name": "Gobierno Y Gesti\u00f3n De Tecnolog\u00edas De Informaci\u00f3n", "prof": "Rojas Cerna", "prof_nom": "Miguel Angel"}, 
     {"ciclo": 8, "color": "#006AF5", "day": 5, "group": "A", "hr_fin": 21, "hr_ini": 18, "letters": "GGTI", "name": "Gobierno Y Gesti\u00f3n De Tecnolog\u00edas De Informaci\u00f3n", "prof": "Rojas Cerna", "prof_nom": "Miguel Angel"}, 
 ] ;
