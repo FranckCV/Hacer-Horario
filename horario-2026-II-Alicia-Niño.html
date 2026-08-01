@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Horario</title>
+<style>
+    :root {
+        --bg: #eef1f7;
+        --panel: #ffffff;
+        --line: #dde2ee;
+        --line-strong: #c7cee0;
+        --text: #232a3b;
+        --text-dim: #6b7488;
+        --head: #232a3b;
+        --head-text: #f4f6fb;
+        /* --sizeCol: 13vw; */
+        --sizeCol: auto;
+        --sizeRow: 5vh;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        min-height: 100vh;
+        padding: 12px;
+    }
+
+    .titulo {
+        font-size: 17px;
+        font-weight: 700;
+        margin: 0 0 2px 0;
+    }
+
+    .subtitulo {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin: 0 0 14px 0;
+    }
+
+    .leyenda {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        box-shadow: 0 1px 2px #23283c0d;
+    }
+
+    .leyenda-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .leyenda-muestra {
+        width: 13px;
+        height: 13px;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+
+    .grid-wrap {
+        overflow-x: auto;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px;
+        box-shadow: 0 1px 2px #23283c0d;
+    }
+
+    /* Sin "gap" en el grid: las divisiones se dibujan con bordes en cada
+       celda, así los bloques de varias horas pueden "apagar" el borde
+       interno y quedar perfectamente unidos, sin líneas cortando el medio. */
+    #grid {
+        display: grid;
+    }
+
+    .cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 13.5px;
+        min-width: 0;
+        border: 1px solid var(--line);
+    }
+
+    .cell-head {
+        background: var(--head);
+        color: var(--head-text);
+        font-weight: 700;
+        font-size: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        border-color: var(--head);
+    }
+
+    .cell-hora {
+        background: var(--bg);
+        color: var(--text-dim);
+        font-size: 13px;
+        font-weight: 600;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        border-color: var(--bg);
+    }
+
+    .cell-vacia {
+        background: #f7f8fc;
+    }
+
+    .cell-vacia:nth-child(odd) {
+        background: #f1f3f9;
+    }
+
+    .cell-bloque {
+        flex-direction: column;
+        /* El contenido (título + grupo + detalle) se ancla arriba y crece
+           hacia abajo dentro del propio bloque de color, en vez de
+           centrarse verticalmente en la fila de inicio: así nunca se
+           desborda hacia la celda de la hora anterior. */
+        justify-content: flex-start;
+        gap: 1px;
+        padding: 4px 3px 3px;
+        border-style: solid;
+        border-width: 0 1.5px 0 1.5px;
+        border-radius: 5px;
+        cursor: default;
+    }
+
+    .cell-bloque .curso-txt {
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 1.2;
+    }
+
+    .cell-bloque .grupo-txt {
+        font-weight: 400;
+        opacity: .85;
+        font-size: 13px;
+    }
+
+    .cell-bloque .detalle-txt {
+        font-size: 12.5px;
+        opacity: .85;
+        line-height: 1.2;
+    }
+
+    @media (max-width: 900px) {
+        :root { --sizeCol: 85px; --sizeRow: 34px; }
+    }
+</style>
+</head>
+<body>
+
+<!-- <p class="titulo">Horario</p>
+<p class="subtitulo">Vista fija de referencia — no seleccionable.</p> -->
+
+<div class="leyenda" id="leyenda"></div>
+
+<div class="grid-wrap">
+    <div id="grid"></div>
+</div>
+
+<script>
+    // ======================================================
+    // 1. DATOS — edita/agrega cursos y sesiones aquí
+    // ======================================================
+
+    const HORA_INI = 6;   // primera hora que se muestra
+    const HORA_FIN = 21;  // última hora que se muestra (hasta las 21:00)
+    const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]; // day: 1..6
+
+    const CURSOS = [
+        {
+            curso: "Moral Católica", color: "#c98a1f",
+            sesiones: [
+                { day: 6, hr_ini: 8, hr_fin: 11, grupo: "I", ciclo: "VII", escuela: "Adm. - Plan Estud.", mod: "P", docente: "Niño Efio, Alicia Lizet" },
+            ],
+        },
+        {
+            curso: "Doctrina Social de la Iglesia", color: "#08ad45",
+            sesiones: [
+                { day: 4, hr_ini: 10, hr_fin: 13, grupo: "A", ciclo: "VIII", escuela: "Adm. - Plan Estud.", mod: "P", docente: "Niño Efio, Alicia Lizet" },
+                { day: 5, hr_ini: 16, hr_fin: 19, grupo: "D", ciclo: "VIII", escuela: "Adm. - Plan Estud.", mod: "P", docente: "Niño Efio, Alicia Lizet" },
+                { day: 3, hr_ini: 7, hr_fin: 10, grupo: "G", ciclo: "VIII", escuela: "Adm. - Plan Estud.", mod: "P", docente: "Niño Efio, Alicia Lizet" },
+                { day: 1, hr_ini: 16, hr_fin: 19, grupo: "L", ciclo: "VIII", escuela: "Adm. - Plan Estud.", mod: "P", docente: "Niño Efio, Alicia Lizet" },
+            ],
+        },
+        {
+            curso: "Doctrina Social de la Iglesia (Derecho)", color: "#5c2fa0",
+            sesiones: [
+                { day: 2, hr_ini: 16, hr_fin: 20, grupo: "B", ciclo: "XII", escuela: "Derecho", mod: "P", docente: "Niño Efio, Alicia Lizet" },
+            ],
+        },
+        {
+            curso: "Teología Moral", color: "#a83250",
+            sesiones: [
+                { day: 1, hr_ini: 7, hr_fin: 9, grupo: "B", ciclo: "V", escuela: "Derecho", mod: "P", docente: "Niño Efio, Alicia Lizet" },
+                { day: 3, hr_ini: 12, hr_fin: 14, grupo: "B", ciclo: "V", escuela: "Derecho", mod: "P", docente: "Niño Efio, Alicia Lizet" },
+            ],
+        },
+    ];
+
+    // ======================================================
+    // 2. LEYENDA
+    // ======================================================
+
+    function renderLeyenda() {
+        const cont = document.getElementById("leyenda");
+        cont.innerHTML = "";
+        CURSOS.forEach(curso => {
+            const item = document.createElement("div");
+            item.className = "leyenda-item";
+            item.innerHTML = `
+                <div class="leyenda-muestra" style="background:${curso.color}"></div>
+                <span>${curso.curso}</span>
+            `;
+            cont.appendChild(item);
+        });
+    }
+
+    // ======================================================
+    // 3. CUADRÍCULA
+    // ======================================================
+
+    function bloquesEn(day, hora) {
+        const resultado = [];
+        CURSOS.forEach(curso => {
+            curso.sesiones.forEach(s => {
+                if (s.day === day && hora >= s.hr_ini && hora < s.hr_fin) {
+                    resultado.push({ curso: curso.curso, color: curso.color, ...s });
+                }
+            });
+        });
+        return resultado;
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById("grid");
+        const filas = (HORA_FIN - HORA_INI) + 1; // +1 fila de cabecera
+
+        grid.innerHTML = "";
+        grid.style.gridTemplateColumns = `55px repeat(${DIAS.length}, var(--sizeCol))`;
+        grid.style.gridTemplateRows = `24px repeat(${filas - 1}, var(--sizeRow))`;
+
+        const esquina = document.createElement("div");
+        esquina.className = "cell cell-head";
+        esquina.textContent = "Hora";
+        grid.appendChild(esquina);
+
+        DIAS.forEach(d => {
+            const c = document.createElement("div");
+            c.className = "cell cell-head";
+            c.textContent = d;
+            grid.appendChild(c);
+        });
+
+        for (let hora = HORA_INI; hora < HORA_FIN; hora++) {
+            const etiqueta = document.createElement("div");
+            etiqueta.className = "cell cell-hora";
+            etiqueta.textContent = `${hora}:00`;
+            grid.appendChild(etiqueta);
+
+            for (let day = 0; day < DIAS.length; day++) {
+                const celda = document.createElement("div");
+                const activos = bloquesEn(day + 1, hora);
+
+                if (activos.length === 0) {
+                    celda.className = "cell cell-vacia";
+                } else if (activos.length > 1) {
+                    // choque entre sesiones distintas en la misma celda
+                    celda.className = "cell cell-bloque";
+                    celda.style.background = "color-mix(in srgb, #c23b3b 22%, transparent)";
+                    celda.style.borderColor = "#c23b3b";
+                    celda.style.color = "#8f1f1f";
+                    celda.style.borderTopWidth = "1.5px";
+                    celda.style.borderBottomWidth = "1.5px";
+                    celda.style.justifyContent = "center";
+                    celda.title = activos.map(a => `${a.curso} · Grupo ${a.grupo}`).join(" / ");
+                    celda.innerHTML = `<div class="curso-txt">${activos.map(a => a.grupo).join(" / ")}</div>`;
+                } else {
+                    const a = activos[0];
+                    const esInicio = hora === a.hr_ini;
+                    const esFin = (hora + 1) === a.hr_fin;
+
+                    celda.className = "cell cell-bloque";
+                    celda.style.background = `color-mix(in srgb, ${a.color} 22%, transparent)`;
+                    celda.style.borderColor = a.color;
+                    celda.style.color = `color-mix(in srgb, ${a.color} 100%, black 25%)`;
+                    celda.style.borderTopWidth = esInicio ? "1.5px" : "0";
+                    celda.style.borderBottomWidth = esFin ? "1.5px" : "0";
+                    celda.style.borderTopLeftRadius = esInicio ? "5px" : "0";
+                    celda.style.borderTopRightRadius = esInicio ? "5px" : "0";
+                    celda.style.borderBottomLeftRadius = esFin ? "5px" : "0";
+                    celda.style.borderBottomRightRadius = esFin ? "5px" : "0";
+                    celda.title = `${a.curso} · Grupo ${a.grupo} · Ciclo ${a.ciclo} · ${a.escuela} · ${a.hr_ini}-${a.hr_fin}h · ${a.docente}`;
+
+                    if (esInicio) {
+                        // El contenido queda anclado arriba (ver .cell-bloque
+                        // { justify-content: flex-start }) para que nunca se
+                        // desborde hacia la celda de la hora anterior cuando
+                        // el texto es más alto que una sola fila.
+                        celda.innerHTML = `
+                            <div class="curso-txt">${a.curso.split(" ").slice(0, 2).join(" ")}</div>
+                            <div class="grupo-txt">Gr. ${a.grupo} · Ciclo ${a.ciclo}</div>
+                            <div class="detalle-txt">${a.hr_ini}-${a.hr_fin}h</div>
+                        `;
+                    } else {
+                        celda.innerHTML = "";
+                    }
+                }
+                grid.appendChild(celda);
+            }
+        }
+    }
+
+    renderLeyenda();
+    renderGrid();
+</script>
+
+</body>
+</html>
