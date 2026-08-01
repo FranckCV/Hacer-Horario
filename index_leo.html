@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configurador de Horario</title>
+<style>
+    :root {
+        --bg: #081028;
+        --bg-panel: #0d1738;
+        --line: #ffffff17;
+        --line-strong: #ffffff2e;
+        --text: #e9ecf6;
+        --text-dim: #8a93b8;
+        --head: #131e46;
+        --sizeCol: 9.75vw;
+        --sizeRow: 4.65vh;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        min-height: 100vh;
+    }
+
+    .app {
+        display: flex;
+        gap: 18px;
+        padding: 12px;
+    }
+
+    /* ---------- panel izquierdo ---------- */
+
+    #panel {
+        width: 300px;
+        flex-shrink: 0;
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        max-height: calc(100vh - 36px);
+        overflow-y: auto;
+    }
+
+    .leyenda {
+        display: flex;
+        gap: 14px;
+        font-size: 10.5px;
+        color: var(--text-dim);
+        padding-bottom: 2px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .leyenda span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .leyenda .muestra {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        background: #ffffff14;
+    }
+
+    .leyenda .muestra.virtual { border: 1px dashed #ffffff70; }
+    .leyenda .muestra.presencial { border: 1px solid #ffffff70; }
+
+    .curso-block {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .curso-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        background: #ffffff08;
+    }
+
+    .curso-barra {
+        width: 5px;
+        height: 18px;
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
+
+    .curso-nombre {
+        font-size: 12.5px;
+        font-weight: 600;
+        line-height: 1.25;
+    }
+
+    .curso-limpiar {
+        margin-left: auto;
+        font-size: 10.5px;
+        color: var(--text-dim);
+        cursor: pointer;
+        user-select: none;
+        padding: 2px 6px;
+        border-radius: 4px;
+        visibility: hidden;
+        flex-shrink: 0;
+    }
+
+    .curso-limpiar:hover { color: var(--text); background: #ffffff14; }
+    .curso-block.activo .curso-limpiar { visibility: visible; }
+
+    .grupos-lista {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px 10px 10px 10px;
+    }
+
+    .grupo-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--line-strong);
+        border-radius: 6px;
+        padding: 5px 8px;
+        cursor: pointer;
+        user-select: none;
+        transition: background .12s, border-color .12s;
+    }
+
+    .grupo-item:hover { border-color: #ffffff55; }
+
+    .grupo-item .grupo-letra {
+        font-size: 12px;
+        font-weight: 700;
+        width: 20px;
+        height: 20px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff14;
+        color: var(--text);
+        flex-shrink: 0;
+    }
+
+    .grupo-item .grupo-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+    }
+
+    .grupo-item .grupo-docente {
+        font-size: 11.5px;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .grupo-item .grupo-tag {
+        font-size: 9.5px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    .grupo-item .grupo-pin {
+        margin-left: auto;
+        font-size: 11px;
+        opacity: .8;
+        flex-shrink: 0;
+    }
+
+    .grupo-item.selected {
+        border-color: transparent;
+    }
+
+    .grupo-item.selected .grupo-letra {
+        background: #081028;
+    }
+
+    /* ---------- horario ---------- */
+
+    .grid-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--bg-panel);
+        padding: 12px;
+        width: 100%;
+    }
+
+    #grid {
+        display: grid;
+        gap: 2px;
+        height: 100%;
+    }
+
+    .cell {
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 11px;
+        min-width: 0;
+        position: relative;
+    }
+
+    .cell-head {
+        background: var(--head);
+        color: var(--text);
+        font-weight: 600;
+        font-size: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 3;
+    }
+
+    .cell-hora {
+        background: #ffffff08;
+        color: var(--text-dim);
+        font-size: 10.5px;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+    }
+
+    .cell-vacia {
+        background: #ffffff05;
+    }
+
+    .cell-vacia:nth-child(odd) {
+        background: #ffffff08;
+    }
+
+    .cell-bloque {
+        flex-direction: column;
+        gap: 2px;
+        padding: 3px;
+        border: 1px solid #ffffff40;
+        cursor: default;
+    }
+
+    .cell-bloque.modalidad-virtual {
+        border-style: dashed;
+        border-color: #22b7ff;
+    }
+
+    .cell-bloque .letras {
+        font-weight: 700;
+        font-size: 11px;
+    }
+
+    .cell-bloque .grupo-letra-txt {
+        font-weight: 400;
+        opacity: .85;
+    }
+
+    .cell-bloque .docente {
+        font-size: 9.5px;
+        opacity: .85;
+        line-height: 1.1;
+    }
+
+    .cell-conflicto {
+        background: rgba(255, 20, 20, 0.85) !important;
+        border: 1px solid #ff5c5c !important;
+        color: #fff;
+        animation: parpadeo 1s infinite;
+    }
+
+    @keyframes parpadeo {
+        0%, 100% { background: rgba(255, 20, 20, 0.55) !important; }
+        50%      { background: rgba(255, 20, 20, 0.95) !important; }
+    }
+
+    @media (max-width: 900px) {
+        .app { flex-direction: column; }
+        #panel { width: 100%; max-height: none; }
+        :root { --sizeCol: 90px; --sizeRow: 38px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+    <aside id="panel">
+        <div class="leyenda">
+            <span><span class="muestra presencial"></span>Presencial</span>
+            <span><span class="muestra virtual"></span>Virtual</span>
+        </div>
+        <div id="listaCursos"></div>
+    </aside>
+
+    <div class="grid-wrap">
+        <div id="grid"></div>
+    </div>
+
+</div>
+
+<script>
+    // ======================================================
+    // 1. DATOS — edita/agrega cursos y grupos aquí
+    // ======================================================
+
+    const HORA_INI = 6;   // primera hora que se muestra (6 = 6:00 am)
+    const HORA_FIN = 23;  // última hora que se muestra (23 = hasta 23:00)
+    const DIAS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]; // day: 0..6
+
+    // Estructura: un curso tiene varios grupos, y cada grupo tiene varias
+    // sesiones (día + hora) a la semana.
+    // - modalidad: "Virtual" | "Presencial"
+    // - fijado: true => ese grupo empieza seleccionado al cargar la página
+    // - docente: si son varios (co-dictado), sepáralos con " ; "
+    const CURSOS = [
+        {
+            curso: "Auditoría de Sistemas de Información", letras: "ASI", color: "#e0524f",
+            grupos: [
+                {
+                    grupo: "A", docente: "Barreto Stein, Karla Vanessa", modalidad: "Virtual", fijado: false,
+                    sesiones: [
+                        { day: 1, hr_ini: 19, hr_fin: 22 },
+                        { day: 3, hr_ini: 20, hr_fin: 22 },
+                    ],
+                },
+            ],
+        },
+        {
+            curso: "Desarrollo de Videojuegos", letras: "DVJ", color: "#e2872a",
+            grupos: [
+                {
+                    grupo: "A", docente: "Chang Espinoza, Alvaro German", modalidad: "Virtual", fijado: false,
+                    sesiones: [
+                        { day: 6, hr_ini: 8, hr_fin: 12 },
+                    ],
+                },
+            ],
+        },
+        {
+            curso: "Deontología y Legislación Laboral e Informática", letras: "DLLI", color: "#9257d1",
+            grupos: [
+                {
+                    grupo: "A", docente: "Torres Benavides, Juan Antonio", modalidad: "Presencial", fijado: false,
+                    sesiones: [
+                        { day: 5, hr_ini: 10, hr_fin: 11 },
+                        { day: 5, hr_ini: 11, hr_fin: 13 },
+                    ],
+                },
+                {
+                    grupo: "B", docente: "Noblecilla Vinces, William Alfredo", modalidad: "Presencial", fijado: false,
+                    sesiones: [
+                        { day: 3, hr_ini: 13, hr_fin: 14 },
+                        { day: 3, hr_ini: 14, hr_fin: 16 },
+                    ],
+                },
+            ],
+        },
+        {
+            curso: "Gestión de Proyectos de SI", letras: "GPSI", color: "#3fae7a",
+            grupos: [
+                {
+                    grupo: "A", docente: "Iman Espinoza, Ricardo David", modalidad: "Presencial", fijado: false,
+                    sesiones: [
+                        { day: 4, hr_ini: 17, hr_fin: 19 },
+                        { day: 4, hr_ini: 19, hr_fin: 20 },
+                        { day: 5, hr_ini: 17, hr_fin: 20 },
+                    ],
+                },
+                {
+                    grupo: "B", docente: "Chirinos Mundaca, Carlos Alberto", modalidad: "Presencial", fijado: false,
+                    sesiones: [
+                        { day: 4, hr_ini: 10, hr_fin: 13 },
+                        { day: 2, hr_ini: 16, hr_fin: 18 },
+                        { day: 2, hr_ini: 18, hr_fin: 19 },
+                    ],
+                },
+            ],
+        },
+        {
+            curso: "Negocios Electrónicos y Marketing Digital", letras: "NEMD", color: "#d4b23a",
+            grupos: [
+                {
+                    grupo: "A", docente: "Cachay Maco, Junior Eugenio", modalidad: "Presencial", fijado: false,
+                    sesiones: [
+                        { day: 6, hr_ini: 9, hr_fin: 12 },
+                        { day: 5, hr_ini: 8, hr_fin: 10 },
+                    ],
+                },
+                {
+                    grupo: "B", docente: "Cachay Maco, Junior Eugenio", modalidad: "Presencial", fijado: false,
+                    sesiones: [
+                        { day: 2, hr_ini: 7, hr_fin: 10 },
+                        { day: 6, hr_ini: 7, hr_fin: 9 },
+                    ],
+                },
+            ],
+        },
+        {
+            curso: "Seguridad Informática", letras: "SEG", color: "#2ba0c9",
+            grupos: [
+                {
+                    grupo: "A", docente: "Leon Tenorio, Gregorio Manuel", modalidad: "Presencial", fijado: false,
+                    sesiones: [
+                        { day: 4, hr_ini: 13, hr_fin: 14 },
+                        { day: 4, hr_ini: 14, hr_fin: 15 },
+                        { day: 5, hr_ini: 13, hr_fin: 16 },
+                    ],
+                },
+                {
+                    grupo: "B", docente: "Leon Tenorio, Gregorio Manuel", modalidad: "Presencial", fijado: false,
+                    sesiones: [
+                        { day: 4, hr_ini: 15, hr_fin: 18 },
+                        { day: 2, hr_ini: 13, hr_fin: 14 },
+                        { day: 2, hr_ini: 14, hr_fin: 15 },
+                    ],
+                },
+            ],
+        },
+        {
+            curso: "Seminario de Tesis I", letras: "TES1", color: "#17a398",
+            grupos: [
+                {
+                    grupo: "A", docente: "Reyes Burgos, Karla Cecilia ; Aranguri García, María Ysabel ; Aquino Trujillo, Jury Yesenia", modalidad: "Virtual", fijado: false,
+                    sesiones: [
+                        { day: 2, hr_ini: 14, hr_fin: 15 },
+                        { day: 2, hr_ini: 15, hr_fin: 19 },
+                    ],
+                },
+                {
+                    grupo: "B", docente: "Reyes Burgos, Karla Cecilia ; Aranguri García, María Ysabel ; Aquino Trujillo, Jury Yesenia", modalidad: "Virtual", fijado: false,
+                    sesiones: [
+                        { day: 5, hr_ini: 14, hr_fin: 15 },
+                        { day: 5, hr_ini: 15, hr_fin: 19 },
+                    ],
+                },
+            ],
+        },
+        {
+            curso: "Sistemas ERP", letras: "ERP", color: "#d63b8f",
+            grupos: [
+                {
+                    grupo: "A", docente: "Alarcón García, Roger Ernesto", modalidad: "Virtual", fijado: false,
+                    sesiones: [
+                        { day: 4, hr_ini: 7, hr_fin: 9 },
+                        { day: 2, hr_ini: 7, hr_fin: 9 },
+                    ],
+                },
+            ],
+        },
+    ];
+
+    // ======================================================
+    // 2. UTILIDADES DE TEXTO
+    // ======================================================
+
+    // Soporta un solo docente ("Apellidos, Nombres") o varios separados
+    // por " ; " para cursos co-dictados.
+
+    // "Barreto Stein, Karla Vanessa" -> "Barreto Stein"
+    // "A, a ; B, b" -> "A, B"
+    function apellidosCompletos(docente) {
+        return docente.split(";").map(d => d.split(",")[0].trim()).join(", ");
+    }
+
+    // "Barreto Stein, Karla Vanessa" -> "Barreto"
+    // "A b, x ; C d, y" -> "A / C"
+    function primerApellido(docente) {
+        return docente.split(";").map(d => d.split(",")[0].trim().split(" ")[0]).join(" / ");
+    }
+
+    // ======================================================
+    // 3. ESTADO
+    // ======================================================
+
+    // seleccion["Nombre del curso"] = "A" | "B" | ... | null
+    const seleccion = {};
+
+    CURSOS.forEach(curso => {
+        const fijado = curso.grupos.find(g => g.fijado);
+        seleccion[curso.curso] = fijado ? fijado.grupo : null;
+    });
+
+    function toggleGrupo(curso, grupo) {
+        seleccion[curso] = (seleccion[curso] === grupo) ? null : grupo;
+        renderPanel();
+        renderGrid();
+    }
+
+    function limpiarCurso(curso) {
+        seleccion[curso] = null;
+        renderPanel();
+        renderGrid();
+    }
+
+    // ======================================================
+    // 4. PANEL IZQUIERDO
+    // ======================================================
+
+    function renderPanel() {
+        const cont = document.getElementById("listaCursos");
+        cont.innerHTML = "";
+
+        CURSOS.forEach(curso => {
+            const activo = !!seleccion[curso.curso];
+
+            const bloque = document.createElement("div");
+            bloque.className = "curso-block" + (activo ? " activo" : "");
+
+            const head = document.createElement("div");
+            head.className = "curso-head";
+            head.innerHTML = `
+                <div class="curso-barra" style="background:${curso.color}"></div>
+                <div class="curso-nombre">${curso.curso}</div>
+                <div class="curso-limpiar">Quitar</div>
+            `;
+            head.querySelector(".curso-limpiar").onclick = () => limpiarCurso(curso.curso);
+
+            const lista = document.createElement("div");
+            lista.className = "grupos-lista";
+
+            curso.grupos.forEach(g => {
+                const esSel = seleccion[curso.curso] === g.grupo;
+
+                const item = document.createElement("div");
+                item.className = "grupo-item" + (esSel ? " selected" : "");
+                if (esSel) item.style.background = curso.color;
+
+                item.innerHTML = `
+                    <div class="grupo-letra">${g.grupo}</div>
+                    <div class="grupo-info">
+                        <div class="grupo-docente">${apellidosCompletos(g.docente)}</div>
+                        <div class="grupo-tag">${g.modalidad}</div>
+                    </div>
+                    ${g.fijado ? '<div class="grupo-pin" title="Fijado por defecto">📌</div>' : ''}
+                `;
+                item.onclick = () => toggleGrupo(curso.curso, g.grupo);
+                lista.appendChild(item);
+            });
+
+            bloque.appendChild(head);
+            bloque.appendChild(lista);
+            cont.appendChild(bloque);
+        });
+    }
+
+    // ======================================================
+    // 5. CUADRÍCULA DE HORARIO
+    // ======================================================
+
+    function bloquesActivosEn(day, hora) {
+        const resultado = [];
+        CURSOS.forEach(curso => {
+            curso.grupos.forEach(g => {
+                if (seleccion[curso.curso] !== g.grupo) return;
+                g.sesiones.forEach(s => {
+                    if (s.day === day && hora >= s.hr_ini && hora < s.hr_fin) {
+                        resultado.push({
+                            letras: curso.letras,
+                            grupo: g.grupo,
+                            docente: g.docente,
+                            color: curso.color,
+                            modalidad: g.modalidad,
+                        });
+                    }
+                });
+            });
+        });
+        return resultado;
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById("grid");
+        const filas = (HORA_FIN - HORA_INI) + 1; // +1 fila de cabecera
+
+        grid.innerHTML = "";
+        grid.style.gridTemplateColumns = `50px repeat(${DIAS.length}, var(--sizeCol))`;
+        grid.style.gridTemplateRows = `20px repeat(${filas - 1}, var(--sizeRow))`;
+
+        // cabecera
+        const esquina = document.createElement("div");
+        esquina.className = "cell cell-head";
+        esquina.textContent = "Hora";
+        grid.appendChild(esquina);
+
+        DIAS.forEach(d => {
+            const c = document.createElement("div");
+            c.className = "cell cell-head";
+            c.textContent = d;
+            grid.appendChild(c);
+        });
+
+        // filas de horas
+        for (let hora = HORA_INI; hora < HORA_FIN; hora++) {
+            const etiqueta = document.createElement("div");
+            etiqueta.className = "cell cell-hora";
+            etiqueta.textContent = `${hora}:00`;
+            grid.appendChild(etiqueta);
+
+            for (let day = 0; day < DIAS.length; day++) {
+                const celda = document.createElement("div");
+                const activos = bloquesActivosEn(day, hora);
+
+                if (activos.length === 0) {
+                    celda.className = "cell cell-vacia";
+                } else if (activos.length > 1) {
+                    celda.className = "cell cell-bloque cell-conflicto";
+                    celda.innerHTML = activos.map(a => `${a.letras}-${a.grupo}`).join(" / ");
+                } else {
+                    const a = activos[0];
+                    celda.className = "cell cell-bloque" + (a.modalidad === "Virtual" ? " modalidad-virtual" : "");
+                    celda.style.background = `color-mix(in srgb, ${a.color} 30%, transparent)`;
+                    celda.style.color = `color-mix(in srgb, ${a.color} 100%, white 55%)`;
+                    celda.innerHTML = `
+                        <div class="letras">${a.letras} <span class="grupo-letra-txt">- ${a.grupo}</span></div>
+                        <div class="docente">${primerApellido(a.docente)}</div>
+                    `;
+                }
+                grid.appendChild(celda);
+            }
+        }
+    }
+
+    // ======================================================
+    // 6. INICIO
+    // ======================================================
+
+    renderPanel();
+    renderGrid();
+</script>
+
+</body>
+</html>
